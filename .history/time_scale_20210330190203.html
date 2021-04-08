@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+</head>
+<body>
+
+</body>
+<script type='text/javascript'>
+var parseTime = d3.timeParse("%m/%d/%y")
+d3.dsv(',','time_scale_data.csv',function(data){
+return {
+  Date:parseTime(data.Date)
+  Amount:data.Amount
+}
+}).then(function(data){
+  console.log('data',data)
+});
+</script>
+</html>

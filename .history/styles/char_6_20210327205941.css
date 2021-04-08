@@ -1,0 +1,8 @@
+.bar {
+    display: inline-block;
+    height: 75px;
+    width: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background: rgb(0, 128, 240);
+}

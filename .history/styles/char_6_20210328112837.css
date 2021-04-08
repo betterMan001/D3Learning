@@ -1,0 +1,13 @@
+.bar {
+    display: inline-block;
+    height: 75px;
+    width: 20px;
+    margin-right: 2px;
+    background: rgb(0, 128, 240);
+}
+svg .cir{
+    stroke: orange;
+    stroke-width: 2px;
+    fill: yellow;
+}
+s

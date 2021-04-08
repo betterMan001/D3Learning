@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+</head>
+<body>
+dudududlalalaxixixi
+</body>
+<script type='text/javascript'>
+var data
+d3.dsv(",","test.csv",function(d){
+return {
+    Food:d.Food,
+    Deliciousness:parseFloat(d.Deliciousness)
+}
+}).then(function(data){
+    window.data = data
+    console.log(data)
+});
+console.log('exterData')
+console.log('num',typeof 1)
+</script>
+</html>

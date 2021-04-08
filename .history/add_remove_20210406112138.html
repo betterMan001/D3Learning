@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="Scripts/d3.min.js"></script>
+</head>
+
+<body>
+</body>
+<script>
+  let num = 20
+  let dataset = []
+  let w = 500
+  let h = 200
+  for (let i = 0; i < num; i++) {
+    let temp = Math.random() * 1000
+    dataset.push(temp)
+  }
+  //TODO 后面用字母当x标签试一下
+  let xScale = d3.scaleBand()
+    .domain(d3.range(num))
+    .rangeRound([0, w])
+  let yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataset)])
+    .rangeRound(0, h)
+
+  let svg = d3.select('body')
+    .append('svg')
+    .attr('width', w)
+    .attr('height', h);
+  let rects = svg.selectAll('rect')
+
+</script>
+
+
+</html>

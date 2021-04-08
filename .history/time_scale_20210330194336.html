@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+</head>
+<body>
+
+</body>
+<script type='text/javascript'>
+var padding = 20
+var w = 500
+var h = 200
+var dataSet 
+var scale
+var parseTime = d3.timeParse("%m/%d/%y")
+d3.dsv(',','time_scale_data.csv',function(data){
+return {
+  Date:parseTime(data.Date),
+  Amount: +data.Amount
+}
+}).then(function(data){
+  xScale = d3.scaleTime()
+             .domain([d3.min(data,function(d){return d.Date}),d3.max(data,function(d){return d.Date})])
+             .range([padding,w-padding])
+  scale = xScale
+  dataSet = data
+  console.log('data',data)
+  var svg = d3.select('body')
+              .append('svg')
+              .attr('width',w)
+              .attr('height',h)
+  var cirs =svg.selectAll('circle').data(data).enter().append('circle') 
+});
+</script>
+</html>

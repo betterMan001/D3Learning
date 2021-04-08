@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+<link href="styles/char_6.css" rel="stylesheet" >
+</head>
+<body>
+xixi
+</body>
+<script type='text/javascript'>
+var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+                11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+
+var svg = d3.select("body")
+            .append("svg")
+svg.attr("width", 500)
+   .attr("height", 200);
+
+var rects = svg.selectAll("rect")
+.data(dataset)
+.enter()
+.append("rect")
+rects.attr("class","rec")
+.attr("x",function(d,i){
+    return (i*20)+10
+})
+.attr("y",function(d){
+return (200-Number(d)).toString()
+})
+.style('height',function(d){
+    return d+'px'
+})
+.attr("fill",function(d){
+    return "rgb(0,0,"+Math.round(d*10)+")";
+});
+//添加标签
+svg.selectAll("text")
+.data(dataset)
+.enter()
+.append("text")
+ .text(function(d) {
+       return d;
+   })
+ .attr("x", function(d, i) {
+       return i * (w / dataset.length);
+   })
+   .attr("y", function(d) {
+       return 200 - (d * 4);
+   });
+/*var lines = svg.selectAll("line")
+.data(dataset)
+.enter()
+.append("line")
+lines.attr("class","lin")
+.attr("x1",function(d,i){
+    return (i*20)+10
+})
+.attr("y1",100)
+.attr("x2",function(d,i){
+    return (i*20)+10
+})
+.attr("y2",function(d){
+    return 100-d
+})*/
+
+</script>
+</html>

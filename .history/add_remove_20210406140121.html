@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="Scripts/d3.min.js"></script>
+</head>
+
+<body>
+  <button id="add_b">add</button>
+  <button id="del_b">delete</button>
+  <br>
+</body>
+<script>
+  let num = 20
+  let dataset = []
+  let w = 500
+  let h = 200
+  let padding = 30
+  for (let i = 0; i < num; i++) {
+    let temp = Math.random() * 1000
+    dataset.push(temp)
+  }
+  //TODO 后面用字母当x标签试一下
+  let xScale = d3.scaleBand()
+    .domain(d3.range(num))
+    .rangeRound([padding, w - padding])
+    .paddingInner(0.05)
+
+  let yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataset)])
+    .rangeRound([h - padding, padding])
+
+  let svg = d3.select('body')
+    .append('svg')
+    .attr('width', w)
+    .attr('height', h);
+  let rects = svg.selectAll('rect')
+    .data(dataset)
+    .enter()
+    .append('rect')
+    .attr("x", function (d, i) {
+      return xScale(i)
+    })
+    .attr("y", function (d) {
+      return yScale(d)
+    })
+    .attr("width", xScale.bandwidth())
+    .attr("height", function (d) {
+      return h - yScale(d) - padding
+    })
+    .attr("fill", "rgb(82,222,205)");
+
+  //axis
+  let xAxis = d3.axisBottom(xScale)
+
+  svg.append("g")
+    .attr("class", "x-axis")
+    .attr("transform", "translate(0, " + (h - padding) + ")")
+    .call(xAxis)
+  let yAxis = d3.axisLeft(yScale)
+  //fell so good
+  svg.append("g")
+    .attr("class", "y-axis")
+    .attr("transform", "translate(" + padding + ",0)")
+    .call(yAxis);
+  d3.selectAll('button')
+    .on("click", function () {
+      let id = d3.select(this).attr("id")
+    })
+</script>
+
+
+</html>

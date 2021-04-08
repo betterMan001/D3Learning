@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<link href="styles/char_6.css" rel="stylesheet" >
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+</head>
+<body>
+</body>
+<script type='text/javascript'>
+/*var dataset = [];
+for(var i =0;i<25;i++){
+    var newNum = Math.round(Math.random()*30,0);
+    dataset.push(newNum)
+}
+d3.select("body")
+.selectAll("div")
+.data(dataset)
+.enter()
+.append("div")
+.attr('class','bar')
+.style('height',function(d){
+    return d+'px'
+});*/
+var w =500
+var h = 50
+var dataset = [5,10,15,20,25]
+var svg =d3.select("body").append("svg")
+svg.attr('width',500)
+svg.attr('height',50)
+var circles = svg.selectAll('circle')//circles = []
+.data(dataset)
+.enter()
+.append('circle')
+circles.attr("cx", function(d, i) {
+            return (i * 50) + 25;
+        })
+       .attr("cy", h/2)
+       .attr("r", function(d) {
+            return d;
+       });
+circles.attr('fill','yellow')
+circles.attr('stroke','orange')
+</script>
+</html>

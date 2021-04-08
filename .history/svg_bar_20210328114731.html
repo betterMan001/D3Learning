@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+<link href="styles/char_6.css" rel="stylesheet" >
+</head>
+<body>
+xixi
+</body>
+<script type='text/javascript'>
+var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+                11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+var rects = d3.select("body")
+.selectAll("rect")
+.data(dataset)
+.enter()
+.append("rect")
+rects.attr("class","rec")
+.attr("x",function(d,i){
+    return (i*20)+10
+})
+.attr("y",10)
+.style('height',function(d){
+    return d+'px'
+});
+</script>
+</html>

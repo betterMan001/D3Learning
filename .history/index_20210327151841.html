@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>D3 Page</title>
+<script type = 'text/javascript' src='Scripts/d3.js'></script>
+</head>
+<body>
+dudududlalalaxixixi
+</body>
+<script type='text/javascript'>
+
+d3.csv("test.csv",rowConverter,function(data){
+    let res = d3.csvParse(string, function(d) {
+  return {
+    Food: d.Food, // lowercase and convert "Year" to Date
+    Deliciousness:parseFloat(d.Deliciousness), // lowercase
+  };
+  console.log(res)
+}
+});
+console.log('num',typeof 1)
+</script>
+</html>

@@ -1,0 +1,18 @@
+{
+
+  "ctime": "",
+  "private": false,
+  "equipment": {
+    "name": "rpg mw",
+    "brand": "rpg",
+    "type": "",
+    "bands": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      23
+    ]
+  }
+}
