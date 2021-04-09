@@ -5,25 +5,12 @@
   <title>D3 Page</title>
   <script type='text/javascript' src='Scripts/d3.js'></script>
   <script type='text/javascript' src='test.js'></script>
-  <style type="text/css">
-    p {
-      display: inline-block;
-    }
-
-    input {
-      height: 250px;
-      width: 30px;
-      /* Orient vertically */
-      -webkit-appearance: slider-vertical;
-      writing-mode: bt-lr;
-    }
-  </style>
   <link href="styles/char_6.css" rel="stylesheet">
 </head>
 
 <body>
   <marquee>Smashing xwd!</marquee>
-  <input id="slider" type="range" min="0" max="255" step="1" value="0" orient="vertical">
+  <input id="slider" type="range" min="0" max="255">
 </body>
 <script type='text/javascript'>
 
@@ -130,13 +117,6 @@
       .attr("font-family", "sans-serif")
       .attr("font-size", "11px")
       .attr("fill", "white")
-    d3.select("input")
-      .on("change", function () {
-        let rgb_color = +d3.select(this).node().value;
-        console.log(rgb_color)
-        svg.selectAll("rect")
-          .attr("fill", d => "rgb(0,0," + rgb_color + ")")
-      })
   })
 
   // let dataset = aa.dataset

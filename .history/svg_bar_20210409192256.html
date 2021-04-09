@@ -135,7 +135,7 @@
         let rgb_color = +d3.select(this).node().value;
         console.log(rgb_color)
         svg.selectAll("rect")
-          .attr("fill", d => "rgb(0,0," + rgb_color + ")")
+          .attr("fill", d => "rgb(0,0" + rgb_color + ")")
       })
   })
 

@@ -87,23 +87,20 @@
 
     //On button click, execute a function for each circle in the allCircles selection
     var colors = d3.schemeCategory20;
-
+    var colorIndex = Math.round(Math.random() * 20);
 
     d3.selectAll("input")
       .on("click", function () {
-        allCircles
-          .transition()
-          .delay((d, i) => {
+        allCircles.transition()
+          .delay(d, i => {
             return i * 25
           })
           .duration(2000)
           .ease(d3.easeElasticOut)
-          .attr("fill", (d, i) => {
-            var colorIndex = Math.round(Math.random() * 20);
-            return colors[colorIndex]
+          .attr("fill", d, i => {
+            colors[colorIndex]
           })
-          .attr("r", 25)
-
+          .attr("r", 25);
         // allCircles.each(freakOut);  //Hold on to your hats!
       });
 

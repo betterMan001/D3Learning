@@ -91,19 +91,17 @@
 
     d3.selectAll("input")
       .on("click", function () {
-        allCircles
-          .transition()
-          .delay((d, i) => {
+        allCircles.transition()
+          .delay(d, i => {
             return i * 25
           })
           .duration(2000)
           .ease(d3.easeElasticOut)
-          .attr("fill", (d, i) => {
+          .attr("fill", d, i => {
             var colorIndex = Math.round(Math.random() * 20);
-            return colors[colorIndex]
+            return colors[i]
           })
-          .attr("r", 25)
-
+          .attr("r", 25);
         // allCircles.each(freakOut);  //Hold on to your hats!
       });
 

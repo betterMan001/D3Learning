@@ -130,15 +130,13 @@
       .attr("font-family", "sans-serif")
       .attr("font-size", "11px")
       .attr("fill", "white")
-    d3.select("input")
-      .on("change", function () {
-        let rgb_color = +d3.select(this).node().value;
-        console.log(rgb_color)
-        svg.selectAll("rect")
-          .attr("fill", d => "rgb(0,0," + rgb_color + ")")
-      })
   })
-
+  d3.select("input")
+    .on("change", function () {
+      let rgb_color = +d3.select(this).node().value;
+      svg.selectAll("rect")
+        .attr("fill", d => "rgb(0,0" + rgb_color + ")")
+    })
   // let dataset = aa.dataset
   // var svg = d3.select("body")
   //   .append("svg")
