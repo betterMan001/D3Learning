@@ -1,0 +1,46 @@
+<html>
+
+<head>
+  <script src="../Scripts/d3.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+</body>
+<script type="module">
+  function randomLetters() {
+    return d3.shuffle("abcdefghijklmnopqrstuvwxyz".split(""))
+      .slice(0, Math.floor(6 + Math.random() * 20))
+      .sort();
+  }
+
+  let width = 400
+  const svg = d3.select("body").append("svg")
+    .attr('width', width)
+    .attr('height', 33)
+    .attr("viewBox", `0 -20 ${width} 33`);
+  // svg.selectAll("text")
+  //   .data(randomLetters())
+  //   .enter()
+  //   .append("text")
+  //   .attr("x", (d, i) => i * 16)
+  //   .text(d => d);
+  while (true) {
+    const textUpdate = svg.selectAll("text")
+      .data(randomLetters());
+
+    const textEnter = textUpdate.enter().append("text");
+
+    const textExit = textUpdate.exit().remove();
+
+    textEnter.merge(textUpdate)
+      .attr("x", (d, i) => i * 16)
+      .text(d => d);
+
+    // yield svg.node();
+    await Promises.tick(2500);
+  }
+
+</script>
+
+</html>

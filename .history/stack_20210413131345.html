@@ -1,0 +1,53 @@
+<html>
+
+<head>
+  <script src="Scripts/d3.js"></script>
+</head>>
+
+<body>
+
+</body>
+<script type="text/javascript">
+  //Width and height
+  let w = 500;
+  let h = 300;
+
+  let dataset = [
+    { apples: 5, oranges: 10, grapes: 22 },
+    { apples: 4, oranges: 12, grapes: 28 },
+    { apples: 2, oranges: 19, grapes: 32 },
+    { apples: 7, oranges: 23, grapes: 35 },
+    { apples: 23, oranges: 17, grapes: 43 }
+  ];
+
+  let stack = d3.stack()
+    .keys(["apple", "oranges", "grapes"])
+
+  let series = stack(dataset)
+
+  let xScale = d3.scaleBand()
+    .domain(d3.range(series.length))
+    .range(0, w)
+  let yScale = d3.scaleLinear()
+    .domain(d3.range(series.length))
+    .range(0, h
+    )
+  let svg = d3.select("body")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h)
+
+  let groups = svg.selectAll("g")
+    .data(series)
+    .enter()
+    .append(g)
+
+  let rects = groups.selectAll("rect")
+    .data(d => d)
+    .enter()
+    .append("rect")
+    .attr("x", (d, i) => xScale(i));
+    .attr('y', (d) => yScale(d))
+</script>
+
+</html>

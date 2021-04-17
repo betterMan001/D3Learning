@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="../d3.js"></script>
+  <style type="text/css">
+    .geo {
+      stroke: cornflowerblue;
+    }
+  </style>
+</head>
+
+<body>
+
+
+</body>
+
+<script type="text/javascript">
+  let w = 500;
+  let h = 300;
+
+  //Define map projection
+  let projection = d3.geoAlbersUsa()
+    .translate([w / 2, h / 2])
+    .scale([500]);
+
+  //Define path generator
+  let path = d3.geoPath(projection)
+  let color = d3.scaleQuantize()
+    .range(["rgb(237,248,233)", "rgb(186,228,179)", "rgb(116,196,118)", "rgb(49,163,84)", "rgb(0,109,44)"])
+
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h);
+  d3.dsv(',', 'us-ag-productivity.csv', function (data) {
+    return {
+      state: data.state,
+      value: +data.value
+    }
+  }).then(function (data) {
+    d3.json("us-states.json", json => {
+      let features = json.features
+
+      for (let i = 0; i < features.length; i++) {
+
+        for (let j = 0; j < data.length; j++) {
+          if (data[j].state == features[i].properties.name) {
+            features.properties['value'] = data[j].value
+            break
+          }
+        }
+      }
+
+      svg.selectAll("path")
+        .data(json.features)
+        .enter()
+        .append("path")
+        .attr("class", "geo")
+        .attr("d", path)
+        .attr("fill", d => {
+          return color(d.properties.value)
+        })
+
+    });
+  });
+
+</script>
+
+</html>

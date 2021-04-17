@@ -1,0 +1,30 @@
+<html>
+
+<head>
+  <script src="../Scripts/d3.js" type="module"></script>
+</head>
+
+<body>
+
+</body>
+<script type="module">
+  let randomLetters = () => {
+    return d3.shuffle("abcdefghijklmnopqrstuvwxyz".split(""))
+      .slice(0, Math.floor(6 + Math.random() * 20))
+      .sort();
+  }
+  let width = 300
+  let svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", 33)
+    .attr("viewBox", "0 -20 ${width} 33");
+
+  svg.selectAll(text)
+    .data(randomLetters)
+    .enter()
+    .append("text")
+    .attr("x", (d, i) => i * 16)
+    .text(d => d);
+</script>
+
+</html>

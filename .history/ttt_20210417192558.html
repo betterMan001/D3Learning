@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="Scripts/d3.min.js"></script>
+  <style type="text/css">
+    .line {
+      fill: none;
+      stroke-width: 0.5;
+
+    }
+
+    rect:hover {
+      fill: orange;
+    }
+  </style>
+</head>
+
+<body>
+  <button id="add_b">add</button>
+  <button id="del_b">delete</button>
+  <br>
+</body>
+
+<script type="text/babel">
+  let num = 20
+  let dataset = []
+  let w = 500
+  let h = 200
+  let padding = 30
+
+  //随机生成初始值
+  for (let i = 0; i < num; i++) {
+    let tevalue = Math.random() * 1000
+    let temp = {
+      id: i,
+      value: tevalue
+    }
+    dataset.push(temp)
+  }
+
+  var key = function (d) {
+    return d.id;
+  };
+
+  //TODO 后面用字母当x标签试一下
+  let xScale = d3.scaleBand()
+    .domain(d3.range(num))
+    .range([padding, w - padding])
+    .paddingInner(0.05)
+
+  let svg = d3.select('body')
+    .append('svg')
+    .attr('width', w)
+    .attr('height', h);
+
+  let rects = svg.selectAll('rect')
+    .data(dataset, key)
+    .enter()
+    .append('rect')
+    .attr("x", (d, i) => xScale(i))
+    .attr("y", d => d.value)
+    .attr("width", xScale.bandwidth())
+    .attr("height", d => {
+      return h - d.value - padding
+    })
+    .attr("fill", "rgb(82,222,205)")
+    .append("title")
+    .text(d => "this value is ${Math.round(d.value)}");
+
+  let xAxis = d3.axisBottom(xScale)
+  console.log(xAxis)
+  svg.append("g")
+    .attr("id", "x-axis")
+    .attr("transform", "translate(0, " + (h - padding) + ")")
+    .call(xAxis)
+
+  let yAxis = d3.axisLeft()
+  //fell so good
+  svg.append("g")
+    .attr("id", "y-axis")
+    .attr("transform", "translate(" + padding + ",0)")
+    .call(yAxis);
+
+  d3.selectAll('button')
+    .on("click", function () {
+
+      let id = d3.select(this).attr("id")
+      //根据id判断增加数组的数据还是减少
+      if (id == 'add_b') {
+        let lastId = dataset[dataset.length - 1].id
+        dataset.push({
+          id: lastId + 1,
+          value: Math.random() * 1000
+        })
+      } else {
+        dataset.shift()
+      }
+      //跟新scale
+      xScale.domain(d3.range(dataset.length))
+
+
+      //rebind
+      let bars = svg.selectAll('rect')
+        .data(dataset, key)
+      //处理之前的还有新增的rect元素
+      bars.enter()
+        .append('rect')
+        .attr("x", w - padding - 20)
+        .attr("y", d => d.value)
+        .attr("width", xScale.bandwidth())
+        .attr("height", (d) => {
+          return (h - padding) - d.value;
+        })
+        .attr("fill", "rgb(82,222,205)")
+        .merge(bars).transition()
+        .duration(1000)
+        .attr("x", function (d, i) {
+          return xScale(i);
+        })
+        .attr("y", function (d) {
+          return d.value;
+        })
+        .attr("width", xScale.bandwidth())
+        .attr("height", function (d) {
+          return (h - padding) - d.value;
+        });
+      //处理退出rect元素
+      bars.exit()
+        .transition()
+        .duration(1000)
+        .remove()
+
+      svg.select("#x-axis")
+        .transition()
+        .duration(1000)
+        .call(xAxis);
+      svg.select("#y-axis")
+        .transition()
+        .duration(1000)
+        .call(yAxis);
+    });
+</script>
+
+
+</html>

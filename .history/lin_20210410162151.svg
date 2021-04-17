@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="500px" height="200px"  version='1.1' xmlns='http://www.w3.org/2000/svg'>
+<clipPath id="myClip">
+    <!--
+      圆圈外的所有东西都会被裁剪掉，因此不可见。
+    -->
+    <rect x="0" y="0" width="100" height="100" />
+  </clipPath>
+
+  <!-- 作为引用元素（英文原文：for reference）的黑色心形 -->
+  <path id="heart" d="M10,30 A20,20,0,0,1,50,30 A20,20,0,0,1,90,30 Q90,60,50,90 Q10,60,10,30 Z" />
+  <line x1="0" x2="100" y1="100" y2="100">
+  <!--
+    和上述黑色心形形状相同的红色心形，剪切路径是上面定义的圆；
+    红色心形只有在圆内的部分可见。
+  -->
+  <use clip-path="url(#myClip)" xlink:href="#heart" fill="red" />
+</svg>

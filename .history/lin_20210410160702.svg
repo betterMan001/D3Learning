@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="500px" height="200px"  version='1.1' xmlns='http://www.w3.org/2000/svg'>
+  <clipPath id="myClip">
+    <!--
+      圆圈外的所有东西都会被裁剪掉，因此不可见。
+    -->
+    <rec x="0" y="0" width="30" height="200" fill="blue"/>
+  </clipPath>
+<line clip-path="myClip" x1="0" x2="100" y1="0" y2="100" stroke="gray" stroke-width="10"/>
+</svg>

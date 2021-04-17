@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>D3: Loading GeoJSON data and generating SVG paths</title>
+  <script type="text/javascript" src="../d3.js"></script>
+  <style type="text/css">
+    /* No style rules here yet */
+  </style>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+    //Width and height
+    var w = 500;
+    var h = 300;
+    let path = d3.geoPath()
+      .projection(d3.geoAlbersUsa())
+
+    d3.json("us-states.json", (json) => {
+      svg.selectAll("path")
+        .data(json.features)
+        .enter()
+    })
+
+  </script>
+</body>
+
+</html>

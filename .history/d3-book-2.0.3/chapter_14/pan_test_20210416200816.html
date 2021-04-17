@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>D3 Page</title>
+  <script type='text/javascript' src='../d3.js'></script>
+  <style type="text/css">
+    .pan:hover {
+      fill: cornflowerblue
+    }
+
+    /* text {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    } */
+  </style>
+</head>
+
+<body>
+</body>
+<script type='text/javascript'>
+  //Width and height
+  let [w, h] = [500, 300]
+  let { log } = console
+
+  //Define map projection
+  var projection = d3.geoAlbersUsa()
+    .translate([w / 2, h / 2])// translation offset =>projection center 
+    .scale([1000]);
+
+  var path = d3.geoPath()
+    .projection(projection)
+  let svg = d3.select("body")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h);
+  var color = d3.scaleQuantize()
+    .range(["rgb(237,248,233)", "rgb(186,228,179)", "rgb(116,196,118)", "rgb(49,163,84)", "rgb(0,109,44)"]);
+  let rowConverter = function (d) {
+    return {
+      state: d.state,
+      value: +d.value
+    }
+  }
+
+  d3.csv("us-ag-productivity.csv", rowConverter, function (data) {
+    log(data)
+    color.domain([d3.min(data, d => d.value), d3.max(data, d => d.value)])
+    d3.json("us-states.json", function (json) {
+
+      //Merge the ag. data and GeoJSON
+      //Loop through once for each ag. data value
+      for (var i = 0; i < data.length; i++) {
+
+        var dataState = data[i].state;				//Grab state name
+        var dataValue = parseFloat(data[i].value);	//Grab data value, and convert from string to float
+
+        //Find the corresponding state inside the GeoJSON
+        for (var j = 0; j < json.features.length; j++) {
+
+          var jsonState = json.features[j].properties.name;
+
+          if (dataState == jsonState) {
+
+            //Copy the data value into the JSON
+            json.features[j].properties.value = dataValue;
+
+            //Stop looking through the JSON
+            break;
+
+          }
+        }
+      }
+
+      //Bind data and create one path per GeoJSON feature
+      svg.selectAll("path")
+        .data(json.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .style("fill", function (d) {
+          //Get data value
+          var value = d.properties.value;
+
+          if (value) {
+            //If value exists…
+            return color(value);
+          } else {
+            //If value is undefined…
+            return "#ccc";
+          }
+        });
+      let transition_w = 30
+
+      let north = svg.append('g')
+        .attr("id", "north")
+        .attr("class", "pan")
+
+      north.append('rect')
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", w)
+        .attr("height", transition_w)
+        .style("opacity", 0.3)
+
+      north.append('text')
+        .attr("x", w / 2)
+        .attr("y", transition_w / 2)
+        .html("&uarr;");
+
+      let south = svg.append('g')
+        .attr("id", "south")
+        .attr("class", "pan")
+
+      south.append('rect')
+        .attr("x", 0)
+        .attr("y", h - transition_w)
+        .attr("width", w)
+        .attr("height", transition_w)
+        .style("opacity", 0.3)
+
+      south.append('text')
+        .attr("x", w / 2)
+        .attr("y", h - transition_w / 2 + 10)
+        .html("&darr;");
+
+      let west = svg.append('g')
+        .attr("id", "west")
+        .attr("class", "pan")
+
+
+      west.append('rect')
+        .attr("x", 0)
+        .attr("y", transition_w)
+        .attr("width", transition_w)
+        .attr("height", h - 2 * transition_w)
+        .style("opacity", 0.3)
+
+      west.append('text')
+        .attr("x", transition_w / 2)
+        .attr("y", h / 2)
+        .html("&larr;");
+
+      let east = svg.append('g')
+        .attr("id", "east")
+        .attr("class", "pan")
+
+      east.append('rect')
+        .attr("x", w - transition_w)
+        .attr("y", transition_w)
+        .attr("width", transition_w)
+        .attr("height", h - 2 * transition_w)
+        .style("opacity", 0.3)
+
+      east.append('text')
+        .attr("x", h - (transition_w / 2))
+        .attr("y", h / 2)
+        .html("&rarr;");
+      d3.selectAll('text')
+        .on("selectstart", () => {
+          console.log("呜呜呜", 1)
+          return false
+        })
+
+
+      d3.selectAll(".pan")
+        .on("click", function () {
+          log(d3.select(this).select('text'))
+
+          log(this)
+          let id = d3.select(this).attr("id");
+          let offset = projection.translate();
+          let moveAmount = 50;
+          //获取选中的偏移量
+          switch (id) {
+            case "north":
+              offset[1] += moveAmount
+              break;
+            case "south":
+              offset[1] -= moveAmount
+              break;
+            case "east":
+              offset[0] += moveAmount
+              break;
+            case "west":
+              offset[0] -= moveAmount
+              break;
+          }
+          //重新设置 projection 的 translation offset
+          projection.translate(offset)
+          log(path)
+          d3.selectAll("path")
+            .attr("d", path)
+
+        })
+
+
+
+    });
+  });
+
+
+</script>
+
+</html>
