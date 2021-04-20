@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>D3: Map value labels</title>
+  <title>D3: Zoom and pan presets</title>
   <script type="text/javascript" src="../d3.js"></script>
   <style type="text/css">
     div {
@@ -35,13 +35,6 @@
     .zoom:hover text {
       fill: blue;
     }
-
-    .label {
-      font-family: Helvetica, sans-serif;
-      font-size: 11px;
-      fill: black;
-      text-anchor: middle;
-    }
   </style>
 </head>
 
@@ -72,9 +65,6 @@
     //Number formatting for population values
     var formatAsThousands = d3.format(",");  //e.g. converts 123456 to "123,456"
 
-    //Number formatting for ag productivity values
-    var formatDecimals = d3.format(".3");  //e.g. converts 1.23456 to "1.23"
-
     //Create SVG element
     var svg = d3.select("body")
       .append("svg")
@@ -103,20 +93,10 @@
 
       svg.selectAll("circle")
         .attr("cx", function (d) {
-
           return projection([d.lon, d.lat])[0];
         })
         .attr("cy", function (d) {
           return projection([d.lon, d.lat])[1];
-        });
-
-      svg.selectAll(".label")
-        .attr("x", function (d) {
-
-          return path.centroid(d)[0];
-        })
-        .attr("y", function (d) {
-          return path.centroid(d)[1];
         });
 
     }
@@ -200,24 +180,6 @@
               //If value is undefined…
               return "#ccc";
             }
-          });
-
-        //Create one label per state
-        map.selectAll("text")
-          .data(json.features)
-          .enter()
-          .append("text")
-          .attr("class", "label")
-          .attr("x", function (d) {
-            return path.centroid(d)[0];
-          })
-          .attr("y", function (d) {
-            return path.centroid(d)[1];
-          })
-          .text(function (d) {
-            if (d.properties.value) {
-              return formatDecimals(d.properties.value);
-            };
           });
 
         //Load in cities data
@@ -442,7 +404,7 @@
         map.transition()
           .call(zoom.transform, d3.zoomIdentity
             .translate(w / 2, h / 2)
-            .scale(0.9)
+
             .translate(600, 300));
 
       });

@@ -103,7 +103,6 @@
 
       svg.selectAll("circle")
         .attr("cx", function (d) {
-
           return projection([d.lon, d.lat])[0];
         })
         .attr("cy", function (d) {
@@ -112,7 +111,7 @@
 
       svg.selectAll(".label")
         .attr("x", function (d) {
-
+          console.log("label", d)
           return path.centroid(d)[0];
         })
         .attr("y", function (d) {

@@ -103,7 +103,7 @@
 
       svg.selectAll("circle")
         .attr("cx", function (d) {
-
+          console.log(d)
           return projection([d.lon, d.lat])[0];
         })
         .attr("cy", function (d) {

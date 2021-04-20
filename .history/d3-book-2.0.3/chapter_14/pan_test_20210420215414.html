@@ -9,25 +9,6 @@
       fill: rgb(237, 100, 203)
     }
 
-    .pan rect,
-    .zoom rect {
-      fill: black;
-      opacity: 0.2;
-    }
-
-    .zoom rect {
-      rx: 5;
-      /* Rounded corners */
-      ry: 5;
-    }
-
-    .pan text,
-    .zoom text {
-      fill: black;
-      font-size: 18px;
-      text-anchor: middle;
-    }
-
     text {
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -45,8 +26,7 @@
   let { log } = console
 
   var projection = d3.geoAlbersUsa()
-    .translate([w / 2, h / 2])
-    .scale(500);
+    .translate([0, 0]);
   //Define path generator
   var path = d3.geoPath()
     .projection(projection);

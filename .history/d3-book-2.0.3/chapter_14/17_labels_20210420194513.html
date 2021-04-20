@@ -152,7 +152,7 @@
 
       //Set input domain for color scale
       color.domain([
-        d3.min(data, function (d) { return d.value; }),
+        d3.min(data, function (d) { console.log(d)return d.value; }),
         d3.max(data, function (d) { return d.value; })
       ]);
 
