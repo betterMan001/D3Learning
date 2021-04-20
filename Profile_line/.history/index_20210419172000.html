@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="./d3.js">
+  </script>
+  <style>
+    svg .std_line {
+      stroke: cornflowerblue;
+    }
+  </style>
+</head>
+
+<body>
+  <h2> 湿度廓线</h2>
+
+</body>
+<script type="module">
+  d3.json('data.json', function (json) {
+    return json
+  }).then(function (json) {
+    json = json[0]
+    let { log } = console
+    let [w, h] = [231.25, 500]
+
+    let cloudData = json["cloudData"]
+    let humiData = json["humiData"]
+    log(json)
+    let [sd, no_sd] = [[], []]
+    log(sd)
+    for (let item of humiData) {
+      if (item['type'] == "sd") {
+        sd.push(item)
+      } else {
+        no_sd.push(item)
+      }
+    }
+    log(humiData)
+    let xScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['humi']
+      })])
+      .range(0, w)
+
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['height']
+      })])
+      .range(h, 0)
+
+    var svg = d3.select("body")
+      .append("svg")
+    svg.attr("width", w)
+      .attr("height", h);
+
+    //绘制曲线
+    let line = d3.line()
+      .x((d) => {
+        return xScale(d['humi'])
+      })
+      .y((d) => {
+        return yScale(d['height'])
+      })
+    let sd_g = svg.append("g")
+      .attr("class", "sd_line")
+    let sd_l = sd_g.append("path")
+      .datum(sd)
+      .attr("class", "std_line")
+      .attr("d", line)
+  });
+</script>
+
+</html>

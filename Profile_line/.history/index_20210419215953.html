@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="./d3.js">
+  </script>
+  <style>
+    svg .std_line {
+      stroke: black;
+      fill: none;
+      stroke-width: .1em;
+    }
+
+    svg .nj_line {
+      stroke: rgb(24, 144, 255);
+      fill: none;
+      stroke-width: .1em;
+    }
+
+    #x-axis text {
+      font-size: 7px;
+      color: rgb(136, 134, 134);
+    }
+
+    #x-axis path,
+    line {
+      color: rgb(119, 115, 115);
+    }
+
+    #y-axis text {
+      font-size: 7px;
+      color: rgb(136, 134, 134);
+    }
+
+    #y-axis path,
+    line {
+      color: rgb(119, 115, 115);
+    }
+
+    circle:hover {
+      r: 3
+    }
+
+    #y-axis path {
+      display: none;
+    }
+
+    #y-axis line {
+      stroke-dasharray: 2;
+    }
+
+    /* .std_line {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    } */
+  </style>
+</head>
+
+<body>
+  <h2> 湿度廓线</h2>
+
+</body>
+<script type="module">
+  //自定义y轴坐标
+  function customYAxis(g, yAxis) {
+    var s = g.selection ? g.selection() : g;
+    g.call(yAxis);
+    //s.select(".domain").remove();
+    s.selectAll(".tick line").filter(Number).attr("stroke", "#777").attr("stroke-dasharray", "2,2");
+    s.selectAll(".tick text").attr("x", -20).attr("dy", -4);
+    if (s !== g) g.selectAll(".tick text").attrTween("x", null).attrTween("dy", null);
+  }
+
+  d3.json('data.json', function (json) {
+    return json
+  }).then(function (json) {
+    json = json[0]
+    let { log } = console
+    let [w, h] = [231.25, 400]
+    let margin = { top: 50, right: 30, bottom: 30, left: 40 }
+    let cloudData = json["cloudData"]
+    let humiData = json["humiData"]
+
+    log(json)
+    let [sd, modal] = [[], []]
+    log(sd)
+
+    for (let item of humiData) {
+      if (item['type'] == "sd") {
+        sd.push(item)
+      } else {
+        modal.push(item)
+      }
+
+    }
+
+    var xScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['humi']
+      })])
+      .range([margin.left, w - margin.right])
+    log("humi", d3.max(humiData, d => {
+      return d['humi']
+    }))
+    log(xScale(0.1))
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['height']
+      })])
+      .range([h - margin.top, margin.bottom])
+
+    var svg = d3.select("body")
+      .append("svg")
+    svg.attr("width", w)
+      .attr("height", h);
+    //绘制云顶云高
+    let sd_group = svg.append("g")
+      .attr("class", "sd_group")
+    let rects = sd_group.selectAll("rect")
+      .data(cloudData)
+      .enter()
+      .append("rect")
+      .attr("x", xScale(0))
+      .attr("y", d => yScale(d[1]))
+      .attr("width", w - margin.left - margin.right)
+      .attr("height", d => {
+        return h - margin.top - yScale(d[1] - d[0])
+      })
+      .style("fill", "rgb(246 242 242 / 85%)")
+
+    log("rect", rects)
+
+
+
+    //绘制实测曲线
+    let line = d3.line()
+      .x((d) => {
+        return xScale(d['humi'])
+      })
+      .y((d) => {
+        return yScale(d['height'])
+      })
+    let sd_g = svg.append("g")
+      .attr("class", "sd_line")
+    let sd_l = sd_g.append("path")
+      .datum(sd)
+      .attr("class", "std_line")
+      .attr("d", line)
+
+
+    //绘制南郊曲线
+    let nj_g = svg.append("g")
+      .attr("class", "nj_line")
+
+    let nj_l = sd_g.append("path")
+      .datum(modal)
+      .attr("class", "nj_line")
+      .attr("d", line)
+
+    //绘制辅助工具提示用的圆点
+    sd_group.selectAll("circle")
+      .data(sd)
+      .enter()
+      .append("circle")
+      .attr("r", 1)
+      // .style("fill", "none")
+      // .style("stroke", "none")
+      // .style("pointer-events", "all")
+      .attr("cx", function (d) { return xScale(d['humi']); })
+      .attr("cy", function (d) { return yScale(d['height']) })
+      .append("title")
+      .text(function (d) { return `humi:${d['humi']} height:${d['height']}` })
+
+    let xAxis = d3.axisBottom(xScale)
+      .tickFormat(d => `${d}%`)
+
+    let yAxis = d3.axisRight(yScale)
+      .tickFormat(d => `${d}km`)
+      .tickSize(w - margin.right - margin.left)
+      .ticks(5)
+
+    let x_axis = svg.append('g')
+      .attr("id", "x-axis")
+      .attr("transform", `translate(0,${h - margin.top})`)
+      .call(xAxis);
+
+    let y_axis = svg.append('g')
+      .attr("id", "y-axis")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(customYAxis, yAxis);
+
+    //点击显示隐藏的图例
+    var text_sd = svg.append("text")
+      .attr("id", 'tt_sd')
+      .text("探空实测");
+
+    var text_modal = svg.append("text")
+      .text(`TEST南郊四要素模型小样本扰动模型
+    `);
+
+    let sd_is = true
+    let modal_is = true
+    text_sd.attr("x", xScale(0))
+      .attr("y", h - margin.top + 30)
+      .datum(sd_is)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "9px");
+    text_modal.attr("x", xScale(0))
+      .attr("y", h - margin.top + 40)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "9px");
+
+    svg.selectAll("text")
+      .on("click", function () {
+
+        let id = d3.select(this).attr("id")
+        if (id == 'tt_sd') {
+          if (sd_is) {
+            sd_is = false
+            d3.select(".sd_group").select("path")
+              .style("display", "none")
+            d3.selectAll(".sd_group").selectAll("path")
+              .style("display", "none")
+          } else {
+            sd_is = true
+            d3.select(".sd_group path")
+              .style("display", "inherit")
+            d3.selectAll(".sd_group circle")
+              .style("display", "inherit")
+          }
+        } else {
+          if (modal_is) {
+            modal_is = false
+            d3.select(".nj_line")
+              .style("display", "none")
+          } else {
+            modal_is = true
+            d3.select(".nj_line")
+              .style("display", "inherit")
+          }
+        }
+      })
+  });
+
+
+</script>
+
+</html>

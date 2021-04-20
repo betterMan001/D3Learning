@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="../Scripts/d3.js">
+  </script>
+
+</head>
+
+<body>
+  <h2> 湿度廓线</h2>
+
+</body>
+<script type="module">
+  d3.json('data.json', function (json) {
+    return json[0]
+  }).then(function (json) {
+    let [w, h] = [231.25, 500]
+    let cloudData = json["cloudData"]
+    let humiData = json["humiData"]
+
+    let xScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['humi']
+      })])
+      .range(0, w)
+
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['height']
+      })])
+      .range(h, 0)
+
+    var svg = d3.select("body")
+      .append("svg")
+    svg.attr("width", w)
+      .attr("height", h);
+
+    //绘制曲线
+    let line = d3.line()
+      .x((d) => {
+        return xScale(x)
+      })
+  });
+</script>
+
+</html>

@@ -76,7 +76,7 @@
 
 
   let xAxis = d3.axisBottom(xScale)
-  console.log(xAxis)
+  console.dir(xAxis)
   svg.append("g")
     .attr("id", "x-axis")
     .attr("transform", "translate(0, " + (h - padding) + ")")

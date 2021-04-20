@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="./d3.js">
+  </script>
+  <style>
+    svg .std_line {
+      stroke: black;
+      fill: none;
+      stroke-width: .1em;
+    }
+
+    svg .nj_line {
+      stroke: rgb(133, 196, 255);
+      fill: none;
+      stroke-width: .1em;
+    }
+
+    #x-axis text {
+      font-size: 7px;
+      color: rgb(136, 134, 134);
+    }
+
+    #x-axis path,
+    line {
+      color: rgb(119, 115, 115);
+    }
+
+    #y-axis text {
+      font-size: 7px;
+      color: rgb(136, 134, 134);
+    }
+
+    #y-axis path,
+    line {
+      color: rgb(119, 115, 115);
+    }
+
+    #y-axis path {
+      display: none;
+    }
+
+    #y-axis line {
+      stroke-dasharray: 2;
+    }
+  </style>
+</head>
+
+<body>
+  <h2> 湿度廓线</h2>
+
+</body>
+<script type="module">
+  function customYAxis(g, yAxis) {
+    var s = g.selection ? g.selection() : g;
+    g.call(yAxis);
+    //s.select(".domain").remove();
+    s.selectAll(".tick line").filter(Number).attr("stroke", "#777").attr("stroke-dasharray", "2,2");
+    s.selectAll(".tick text").attr("x", -20).attr("dy", -4);
+    if (s !== g) g.selectAll(".tick text").attrTween("x", null).attrTween("dy", null);
+  }
+  d3.json('data.json', function (json) {
+    return json
+  }).then(function (json) {
+    json = json[0]
+    let { log } = console
+    let [w, h] = [231.25, 400]
+    let margin = { top: 20, right: 30, bottom: 30, left: 40 }
+
+    let cloudData = json["cloudData"]
+    let humiData = json["humiData"]
+    log(json)
+    let [sd, modal] = [[], []]
+    log(sd)
+
+    for (let item of humiData) {
+      if (item['type'] == "sd") {
+        sd.push(item)
+      } else {
+        modal.push(item)
+      }
+
+    }
+
+    var xScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['humi']
+      })])
+      .range([margin.left, w - margin.right])
+    log("humi", d3.max(humiData, d => {
+      return d['humi']
+    }))
+    log(xScale(0.1))
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['height']
+      })])
+      .range([h - margin.top, margin.bottom])
+
+    var svg = d3.select("body")
+      .append("svg")
+    svg.attr("width", w)
+      .attr("height", h);
+    //绘制云顶云高
+    let rects = svg.selectAll("rect")
+      .data(cloudData)
+      .enter()
+      .append("rect")
+      .attr("x", xScale(0))
+      .attr("y", d => yScale(d[1]))
+      .attr("width", w - margin.left - margin.right)
+      .attr("height", d => {
+        return h - margin.top - yScale(d[1] - d[0])
+      })
+      .style("fill", "rgb(183 178 178 / 85%)")
+
+    log("rect", rects)
+
+    //绘制实测曲线
+    let line = d3.line()
+      .x((d) => {
+        return xScale(d['humi'])
+      })
+      .y((d) => {
+        return yScale(d['height'])
+      })
+    let sd_g = svg.append("g")
+      .attr("class", "sd_line")
+    let sd_l = sd_g.append("path")
+      .datum(sd)
+      .attr("class", "std_line")
+      .attr("d", line)
+
+
+    //绘制南郊曲线
+    let nj_g = svg.append("g")
+      .attr("class", "nj_line")
+
+    let nj_l = sd_g.append("path")
+      .datum(modal)
+      .attr("class", "nj_line")
+      .attr("d", line)
+
+    let xAxis = d3.axisBottom(xScale)
+      .tickFormat(d => `${d}%`)
+
+    let yAxis = d3.axisRight(yScale)
+      .tickFormat(d => `${d}km`)
+      .tickSize(w - margin.right - margin.left)
+      .ticks(5)
+
+    let x_axis = svg.append('g')
+      .attr("id", "x-axis")
+      .attr("transform", `translate(0,${h - margin.top})`)
+      .call(xAxis);
+
+    let y_axis = svg.append('g')
+      .attr("id", "y-axis")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(customYAxis, yAxis);
+
+  });
+  var text_sd = svg.append("text")
+    .text("探空实测");
+  var text_modal = svg.append("text")
+    .text("TEST南郊四要素模型小样本扰动模型
+");
+text_sd.attr("x", "0")
+        .attr("y", "w")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "6px")
+
+  svg.append('text')
+        .text("")
+</script>
+
+</html>
