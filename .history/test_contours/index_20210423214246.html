@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script src='../Scripts/d3.js'></script>
+  <script src='./temp.js'></script>
+</head>
+
+<body>
+
+  <script type='module'>
+
+    let [width, height] = [400, 400]
+    let { log } = console
+    var margin = { top: 30, right: 30, bottom: 30, left: 30 },
+      w = width - margin.left - margin.right,
+      h = height - margin.top - margin.bottom;
+
+
+    // log(xi)
+    // log(yi)
+    log(ZI);
+    let color = d3.scaleSequentialLog(d3.extent(ZI), d3.interpolateMagma)
+    let xScale = d3.scaleLinear([0, xi.length], [margin.left, width - margin.right])
+    let yScale = d3.scaleLinear([0, yi.length], [height - margin.top, margin.bottom])
+    let yyScale = d3.scaleLinear(d3.extent(yi), [height - margin.top, margin.bottom])
+    let xxScale = d3.scaleLinear(d3.extent(xi), [margin.left, width - margin.right])
+
+    let transform = ({ type, value, coordinates }) => {
+      return {
+        type, value, coordinates: coordinates.map(rings => {
+          return rings.map(points => {
+            return points.map(([x, y]) => ([
+              xScale(x),
+              yScale(y)
+            ]));
+          });
+        })
+      };
+    }
+
+    let svg = d3.select("body")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+
+    let contours = d3.contours()
+      .size([xi.length, yi.length])
+      .thresholds(7)
+      (ZI)
+      .map(transform)
+    log(contours)
+
+    let map = svg.append("g")
+      .attr("fill", "none")
+      .attr("stroke", "#fff")
+      .attr("stroke-opacity", 0.5)
+
+    let path = map.selectAll("path")
+      .data(contours)
+      .enter()
+      .append("path")
+      .attr("fill", d => color(d.value))
+      .attr("d", d3.geoPath());
+
+    let xAxis = d3.axisBottom(xxScale)
+      .ticks(9)
+    let yAxis = d3.axisLeft(yyScale)
+
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", "translate(0, " + (height - 30) + ")")
+      .call(xAxis);
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(30, 0)`)
+      .call(yAxis);
+  </script>
+</body>
+
+</html>

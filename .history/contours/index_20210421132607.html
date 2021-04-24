@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script src='../Scripts/d3.js'></script>
+</head>
+
+<body>
+
+  <script type='module'>
+    function grid(width, height, value, x, y) {
+
+    }
+    let [w, h] = [500, 400]
+
+    let svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h)
+
+    let map = svg.append("g")
+      .attr("fill", "none")
+      .attr("stroke", "#fff")
+      .attr("stroke-opacity", 0.5)
+    grid = ()
+    d3.contours()
+      .size([grid.n, grid.m])
+      .thresholds(thresholds)
+      (grid)
+      .map(transform)
+    let paths = map.selectAll("path")
+      .data(contours)
+      .append("path")
+      .attr("fill", d => color(d.value))
+      .attr("d", d3.geoPath);
+
+    svg.append("g")
+      .call(xAxis);
+
+    svg.append("g")
+      .call(yAxis);
+  </script>
+</body>
+
+</html>

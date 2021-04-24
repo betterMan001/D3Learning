@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script src='../Scripts/d3.js'></script>
+</head>
+
+<body>
+
+  <script type='module'>
+
+    function grid_generator(width, height, value, x, y) {
+      `
+      value: generate function
+      y:yScale
+      x:xScale
+      `
+      const q = 4; // The level of detail, e.g., sample every 4 pixels in x and y.
+      const x0 = -q / 2, x1 = width + 28 + q;
+      const y0 = -q / 2, y1 = height + q;
+      const n = Math.ceil((x1 - x0) / q);
+
+      const m = Math.ceil((y1 - y0) / q);
+      console.log(“grad_n_m",n, m)
+
+      const grid = new Array(n * m);
+      for (let j = 0; j < m; ++j) {
+        for (let i = 0; i < n; ++i) {
+          grid[j * n + i] = value(x.invert(i * q + x0), y.invert(j * q + y0));
+          // invert => 做 X的反函数
+        }
+      }
+      grid.x = -q;
+      grid.y = -q;
+      grid.k = q;
+      grid.n = n;
+      grid.m = m;
+      return grid;
+    }
+
+    let [width, height] = [500, 300]
+    let { log } = console
+    let svg = d3.select("body")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+
+    let map = svg.append("g")
+      .attr("fill", "none")
+      .attr("stroke", "#fff")
+      .attr("stroke-opacity", 0.5)
+
+    let x = d3.scaleLinear([-2, 2], [0, width + 28])
+    let y = d3.scaleLinear([-2, 1], [height, 0])
+
+    let value = (x, y) =>
+      (1 + (x + y + 1) ** 2 * (19 - 14 * x + 3 * x ** 2 - 14 * y + 6 * x * y + 3 * y ** 2))
+      * (30 + (2 * x - 3 * y) ** 2 * (18 - 32 * x + 12 * x * x + 48 * y - 36 * x * y + 27 * y ** 2))
+
+    let grid = grid_generator(width, height, value, x, y)
+    log("grid", grid)
+
+    let thresholds = d3.range(1, 20).map(i => Math.pow(2, i))
+    let color = d3.scaleSequentialLog(d3.extent(thresholds), d3.interpolateMagma)
+
+    log("thresholds", thresholds)
+    let transform = ({ type, value, coordinates }) => {
+      return {
+        type, value, coordinates: coordinates.map(rings => {
+          return rings.map(points => {
+            return points.map(([x, y]) => ([
+              grid.x + grid.k * x,
+              grid.y + grid.k * y
+            ]));
+          });
+        })
+      };
+    }
+
+    let contours = d3.contours()
+      .size([grid.n, grid.m])
+      .thresholds(thresholds)
+      (grid)
+    console.log("contours", contours)
+    contours.map(transform)
+    console.log(contours)
+    let paths = map.selectAll("path")
+      .data(contours)
+      .enter()
+      .append("path")
+      .attr("fill", d => color(d.value))
+      .attr("d", d3.geoPath());
+
+    let xAxis = g => {
+      return g
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisTop(x).ticks(width / height * 10))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.selectAll(".tick").filter(d => x.domain().includes(d)).remove())
+    }
+    let yAxis = g => {
+      return g
+        .attr("transform", "translate(-1,0)")
+        .call(d3.axisRight(y))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.selectAll(".tick").filter(d => y.domain().includes(d)).remove())
+    }
+    svg.append("g")
+      .call(xAxis);
+
+    svg.append("g")
+      .call(yAxis);
+  </script>
+</body>
+
+</html>

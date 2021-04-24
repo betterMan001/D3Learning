@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script src='../Scripts/d3.js'></script>
+</head>
+
+<body>
+
+  <script type='module'>
+    function grid_generator(width, height, value, x, y) {
+      const q = 4; // The level of detail, e.g., sample every 4 pixels in x and y.
+      const x0 = -q / 2, x1 = width + 28 + q;
+      const y0 = -q / 2, y1 = height + q;
+      const n = Math.ceil((x1 - x0) / q);
+      const m = Math.ceil((y1 - y0) / q);
+      const grid = new Array(n * m);
+      for (let j = 0; j < m; ++j) {
+        for (let i = 0; i < n; ++i) {
+          grid[j * n + i] = value(x.invert(i * q + x0), y.invert(j * q + y0));
+        }
+      }
+      grid.x = -q;
+      grid.y = -q;
+      grid.k = q;
+      grid.n = n;
+      grid.m = m;
+      return grid;
+    }
+    let [w, h] = [500, 400]
+
+    let svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h)
+
+    let map = svg.append("g")
+      .attr("fill", "none")
+      .attr("stroke", "#fff")
+      .attr("stroke-opacity", 0.5)
+    let grid = grid_generator
+    d3.contours()
+      .size([grid.n, grid.m])
+      .thresholds(thresholds)
+      (grid)
+      .map(transform)
+    let paths = map.selectAll("path")
+      .data(contours)
+      .append("path")
+      .attr("fill", d => color(d.value))
+      .attr("d", d3.geoPath);
+
+    svg.append("g")
+      .call(xAxis);
+
+    svg.append("g")
+      .call(yAxis);
+  </script>
+</body>
+
+</html>

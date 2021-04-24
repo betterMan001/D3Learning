@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script src='../Scripts/d3.js'></script>
+  <script src='./temp.js'></script>
+</head>
+
+<body>
+
+  <script type='module'>
+    //坐标点的映射还有点搞不明白
+    function grid_generator(width, height, value, x, y) {
+      `
+      value: generate function
+      y:yScale
+      x:xScale
+      `
+      const q = 4; // The level of detail, e.g., sample every 4 pixels in x and y.
+      const x0 = -q / 2, x1 = width + 28 + q;
+      const y0 = -q / 2, y1 = height + q;
+      const n = Math.ceil((x1 - x0) / q);
+
+      const m = Math.ceil((y1 - y0) / q);
+      console.log("grad_n_m", n, m)
+
+      const grid = new Array(n * m);
+      for (let j = 0; j < m; ++j) {
+        for (let i = 0; i < n; ++i) {
+          grid[j * n + i] = value(x.invert(i * q + x0), y.invert(j * q + y0));
+          // invert => 做 X的反函数
+        }
+      }
+      grid.x = -q;
+      grid.y = -q;
+      grid.k = q;
+      grid.n = n;
+      grid.m = m;
+      return grid;
+    }
+
+    let [width, height] = [500, 300]
+    let { log } = console
+
+    log(xi)
+    log(yi)
+    log(ZI);
+
+  </script>
+</body>
+
+</html>
