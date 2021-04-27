@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+
+  <script type="text/javascript" src="./d3.js"></script>
+</head>
+
+<body>
+
+  <script type='module'>
+    function zoomed({ transform }) {
+      const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
+      const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
+      gDot.attr("transform", transform).attr("stroke-width", 5 / transform.k);
+      gx.call(xAxis, zx);
+      gy.call(yAxis, zy);
+      gGrid.call(grid, zx, zy);
+    }
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 32])
+      .on("zoom", zoomed);
+  </script>
+</body>
+
+</html>

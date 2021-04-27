@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script type="text/javascript" src="./d3.js">
+  </script>
+</head>
+
+<body>
+
+  <script type='module'>
+    let { log } = console
+    let [w, h] = [231.25, 400]
+    var svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h);
+    var zooming = function (d) {
+
+      //Log out d3.event.transform, so you can see all the goodies inside
+      console.log(d3.event);
+
+      // //New offset array
+      // var offset = [d3.event.transform.x, d3.event.transform.y];
+
+      // //Calculate new scale
+      // var newScale = d3.event.transform.k * 2000;
+      // //平移
+
+      // //Update projection with new offset and scale
+      // projection.translate(offset)
+      //   .scale(newScale);
+
+      // //Update all paths 
+      // svg.selectAll("path")
+      //   .attr("d", path);
+
+
+    }
+
+    var zoom = d3.zoom()
+      // .scaleExtent([0.2, 2.0])
+      // .translateExtent([[-1200, -700], [1200, 700]])
+      .on("zoom", zooming)
+
+    var map = svg.append("g")
+      .attr("id", "map")
+      .call(zoom)
+  </script>
+</body>
+
+</html>

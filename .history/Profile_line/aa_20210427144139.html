@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+  <script type="text/javascript" src="./d3 copy.js">
+  </script>
+</head>
+
+<body>
+  <svg width="500" height="200">
+    <g fill="none" stroke-linecap="round" transform="translate(50.274110312505314,58.187241239081814) scale(0.5)"
+      stroke-width="10">
+      <path d="M333.17728734113916,51.12113681670438h0" stroke="#1f77b4"></path>
+  </svg>
+  <script type='module'>
+    let { log } = console
+    let [w, h] = [231.25, 400]
+    var svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h);
+    var zooming = function (d) {
+      console.log(d3.event);
+    }
+
+    var zoom = d3.zoom()
+      .on("zoom", zooming)
+    var map = svg.append("g")
+      .attr("id", "map")
+      .call(zoom);
+    map
+      .selectAll("rect")
+      .data([1, 2, 3, 4, 5])
+      .enter()
+      .append("rect")
+
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", w)
+      .attr("height", h)
+      .attr("opacity", 0.1);
+  </script>
+</body>
+
+</html>

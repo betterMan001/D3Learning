@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <script type="text/javascript" src="./d3.js">
+  </script>
+  <style>
+    svg .sd_group path,
+    .modal_group path {
+
+      fill: none;
+      stroke-width: .1em;
+      stroke-lineCap: round
+    }
+
+    svg .sd_group path {
+      stroke: black;
+    }
+
+    svg .modal_group path {
+      stroke: rgb(24, 144, 255);
+    }
+
+    svg .modal_group circle {
+      fill: rgb(24, 144, 255);
+    }
+
+    svg #x-axis text,
+    #y-axis text {
+      font-size: 7px;
+      color: rgb(136, 134, 134);
+    }
+
+    svg #x-axis .tick line {
+      stroke: rgb(136, 134, 134);
+    }
+
+    svg #x-axis path,
+    #y-axis path line {
+      color: rgb(119, 115, 115);
+    }
+
+    svg circle:hover {
+      r: 3
+    }
+
+    svg #y-axis path {
+      display: none;
+    }
+
+    svg #y-axis line {
+      stroke-dasharray: 2;
+    }
+
+    /* .std_line {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    } */
+  </style>
+</head>
+
+<body>
+  <h4> 湿度廓线</h4>
+
+</body>
+<script type="module">
+
+  function customYAxis(g, yAxis) {
+    `
+    自定义y轴坐标
+    :param g: 被绑定的g,
+    :param yAxis: 原来的yAxis
+    :returns: 
+    `
+    var s = g.selection ? g.selection() : g;
+    g.call(yAxis);
+    s.selectAll(".tick line")
+      .attr("stroke", "#777")
+      .attr("stroke-dasharray", "2,2")
+      .filter(d => d == 0)
+      .attr("display", "none");
+    s.selectAll(".tick text").attr("x", -20).attr("dy", -4);
+    if (s !== g) g.selectAll(".tick text").attrTween("x", null).attrTween("dy", null);
+  }
+
+  d3.json('data.json', function (json) {
+    return json
+  }).then(function (json) {
+
+    let { log } = console
+    let [w, h] = [231.25, 400]
+    let margin = { top: 50, right: 30, bottom: 30, left: 40 }
+
+    //处理数据
+    json = json[0]
+    let cloudData = json["cloudData"]
+    let humiData = json["humiData"]
+    log(json)
+    let [sd, modal] = [[], []]
+    log(sd)
+    for (let item of humiData) {
+      if (item['type'] == "sd") {
+        sd.push(item)
+      } else {
+        modal.push(item)
+      }
+
+    }
+
+    var xScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['humi']
+      })])
+      .range([margin.left, w - margin.right])
+
+    let yScale = d3.scaleLinear()
+      .domain([0, d3.max(humiData, d => {
+        return d['height']
+      })])
+      .range([h - margin.top, margin.bottom])
+
+    var svg = d3.select("body")
+      .append("svg")
+      .attr("width", w)
+      .attr("height", h);
+
+    let map = svg.append("g")
+      .attr("class", "map")
+
+
+    map.append("rect")
+      .attr("x", margin.left)
+      .attr("y", margin.top)
+      .attr("width", w - margin.left - margin.right)
+      .attr("height", h - margin.top - margin.bottom)
+      .attr("opacity", 0);
+    let y_axis = svg.append('g')
+      .attr("id", "y-axis")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(customYAxis, yAxis);
+
+    let x_axis = svg.append('g')
+      .attr("id", "x-axis")
+      .attr("transform", `translate(0,${h - margin.top})`)
+      .call(xAxis);
+
+    let xAxis = d3.axisBottom(xScale)
+      .tickFormat(d => `${d}%`)
+      .ticks(5)
+
+    let yAxis = d3.axisRight(yScale)
+      .tickFormat(d => `${d}km`)
+      .tickSize(w - margin.right - margin.left)
+      .ticks(5)
+
+    let zoomed = ({ transform }) => {
+
+      let x = transform.rescaleX(xScale).interpolate(d3.interpolateRound)
+      let y = transform.rescaleY(yScale).interpolate(d3.interpolateRound)
+      d3.select(".sd_group")
+        .attr("transform", `translate(${transform.x},${transform.y})`)
+        .attr("stroke-width", 1 * transform.k)
+        .attr("r", 1 * transform.k)
+
+      d3.select(".modal_group")
+        .attr("transform", `translate(${transform.x},${transform.y})`)
+        .attr("stroke-width", 1 * transform.k)
+        .attr("r", 1 * transform.k)
+
+      d3.select(".x-axis")
+        .call(xAxis(x))
+      d3.select(".y-axis")
+        .call(yAxis(y))
+
+      // d3.select(".cloud")
+      //   .attr("transform", `translate(${transform.x},${transform.y})`)
+      //   .attr("width", 1 * k)
+      //   .attr("height", 1 * k)
+    }
+    let zoom = d3.zoom()
+      .on("zoom", zoomed)
+    map.call(zoom)
+
+    //绘制云顶云高
+    let rects = map.selectAll("rect")
+      .attr("class", "cloud")
+      .data(cloudData)
+      .enter()
+      .append("rect")
+      .attr("x", xScale(0))
+      .attr("y", d => yScale(d[1]))
+      .attr("width", w - margin.left - margin.right)
+      .attr("height", d => {
+        return h - margin.top - yScale(d[1] - d[0])
+      })
+      .style("fill", "rgb(246 242 242 / 85%)")
+    log("rect", rects)
+    //管理实测廓线
+    let sd_group = map.append("g")
+      .attr("class", "sd_group")
+    //管理模型廓线
+    let modal_group = map.append("g")
+      .attr("class", "modal_group")
+    //绘制实测曲线
+    let line = d3.line()
+      .curve(d3.curveCardinal)
+      .x((d) => {
+        return xScale(d['humi'])
+      })
+      .y((d) => {
+        return yScale(d['height'])
+      })
+
+    let sd_l = sd_group.append("path")
+      .datum(sd)
+      .attr("class", "std_line")
+      .attr("d", line)
+
+
+    //绘制南郊曲线
+
+    let nj_l = modal_group.append("path")
+      .datum(modal)
+      .attr("class", "nj_line")
+      .attr("d", line)
+
+
+    //绘制辅助工具提示用的圆点
+    sd_group.selectAll("circle")
+      .data(sd)
+      .enter()
+      .append("circle")
+      .attr("r", 1)
+      .attr("cx", function (d) { return xScale(d['humi']); })
+      .attr("cy", function (d) { return yScale(d['height']) })
+      .append("title")
+      .text(function (d) { return `探空实测\n湿度:${d['humi']} 高度:${d['height']}` })
+
+    modal_group.selectAll("circle")
+      .data(modal)
+      .enter()
+      .append("circle")
+      .attr("r", 1)
+      .attr("cx", function (d) { return xScale(d['humi']); })
+      .attr("cy", function (d) { return yScale(d['height']) })
+      .append("title")
+      .text(function (d) { return `南郊四要素模型小样本扰动模型\n湿度:${d['humi']} 高度:${d['height']}` })
+
+
+
+
+
+    //点击显示隐藏的图例
+    var text_sd = svg.append("text")
+      .attr("id", 'tt_sd')
+      .text("探空实测");
+
+    var text_modal = svg.append("text")
+      .text(`TEST南郊四要素模型小样本扰动模型
+    `);
+
+
+    text_sd.attr("x", xScale(0))
+      .attr("y", h - margin.top + 30)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "9px");
+
+    text_modal.attr("x", xScale(0))
+      .attr("y", h - margin.top + 40)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "9px");
+
+    var sd_is = true
+    var modal_is = true
+    svg.selectAll("text")
+      .on("click", function () {
+
+        let id = d3.select(this).attr("id")
+        if (id == 'tt_sd') {
+          if (sd_is) {
+            sd_is = false
+            d3.select(".sd_group")
+              .style("display", "none")
+          } else {
+            sd_is = true
+            d3.select(".sd_group")
+              .style("display", "inherit")
+          }
+        } else {
+          if (modal_is) {
+            modal_is = false
+            d3.select(".modal_group")
+              .style("display", "none")
+            // d3.select(".modal_group circle")
+            //   .style("display", "none")
+          } else {
+            modal_is = true
+            d3.select(".modal_group")
+              .style("display", "inherit")
+          }
+        }
+      })
+  });
+
+
+</script>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <style></style>
+
+  <script type="text/javascript" src="./d3.js"></script>
+</head>
+
+<body>
+
+  <script type='module'>
+    let [width, height] = [500, 200]
+    const svg = d3.select("body").append("svg")
+      .attr("viewBox", [0, 0, width, height]);
+
+    const gDot = svg.append("g")
+      .attr("fill", "none")
+      .attr("stroke-linecap", "round");
+
+    const data = (() => {
+      const random = d3.randomNormal(0, 0.2);
+      const sqrt3 = Math.sqrt(3);
+      return [].concat(
+        Array.from({ length: 300 }, () => [random() + sqrt3, random() + 1, 0]),
+        Array.from({ length: 300 }, () => [random() - sqrt3, random() + 1, 1]),
+        Array.from({ length: 300 }, () => [random(), random() - 1, 2])
+      );
+    })()
+
+    let k = height / width
+
+    let x = d3.scaleLinear()
+      .domain([-4.5, 4.5])
+      .range([0, width])
+
+    let y = d3.scaleLinear()
+      .domain([-4.5 * k, 4.5 * k])
+      .range([height, 0])
+    let z = d3.scaleOrdinal()
+      .domain(data.map(d => d[2]))
+      .range(d3.schemeCategory10)
+
+    gDot.selectAll("path")
+      .data(data)
+      .join("path")
+      .attr("d", d => `M${x(d[0])},${y(d[1])}h0`)
+      .attr("stroke", d => z(d[2]));
+
+    const gx = svg.append("g");
+
+    const gy = svg.append("g");
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+    const xAxis = (g, x) => g
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisTop(x).ticks(12))
+      .call(g => g.select(".domain").attr("display", "none"))
+    const yAxis = (g, y) => g
+      .call(d3.axisRight(y).ticks(12 * k))
+      .call(g => g.select(".domain").attr("display", "none"))
+
+    gx.call(xAxis, x)
+    gy.call(yAxis, y);
+
+    function zoomed({ transform }) {
+      const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
+      const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
+      gDot.attr("transform", transform).attr("stroke-width", 5 / transform.k);
+      gx.call(xAxis, zx);
+      gy.call(yAxis, zy);
+      gGrid.call(grid, zx, zy);
+    }
+
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 32])
+      .on("zoom", zoomed);
+
+  </script>
+</body>
+
+</html>
