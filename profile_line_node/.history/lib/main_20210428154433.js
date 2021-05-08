@@ -1,0 +1,296 @@
+import * as d3 from 'd3'
+import '../styles/index.css';
+let { log } = console
+let [w, h] = [231.25, 400]
+let margin = { top: 50, right: 30, bottom: 30, left: 40 }
+
+function customYAxis (g, y) {
+  `
+  自定义y轴坐标
+  :param g: 被绑定的g,
+  :param yAxis: 原来的yAxis
+  :returns: 
+  `
+  var s = g.selection ? g.selection() : g;
+  let yAxis = d3.axisRight(y)
+    .tickFormat(d => `${d}km`)
+    .tickSize(w - margin.right - margin.left)
+    .ticks(5)
+  g.call(yAxis);
+
+  s.selectAll(".tick line")
+    .attr("stroke", "#777")
+    .attr("stroke-dasharray", "2,2")
+    .filter(d => d == 0)
+    .attr("display", "none");
+  s.selectAll(".tick text").attr("x", -20).attr("dy", -4);
+  if (s !== g) g.selectAll(".tick text").attrTween("x", null).attrTween("dy", null);
+}
+
+d3.json('../data/data.json', function (json) {
+  return json
+}).then(function (json) {
+
+  //处理数据
+  json = json[0]
+  let cloudData = json["cloudData"]
+  let humiData = json["humiData"]
+  let lasttransform = null //记录页面当前的transform
+  log(json)
+  let [sd, modal] = [[], []]
+  log(sd)
+  for (let item of humiData) {
+    if (item['type'] == "sd") {
+      sd.push(item)
+    } else {
+      modal.push(item)
+    }
+
+  }
+
+  var xScale = d3.scaleLinear()
+    .domain([0, d3.max(humiData, d => {
+      return d['humi']
+    })])
+    .range([margin.left, w - margin.right])
+
+  let yScale = d3.scaleLinear()
+    .domain([0, d3.max(humiData, d => {
+      return d['height']
+    })])
+    .range([h - margin.top, margin.bottom])
+
+
+
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h)
+    .style("margin-top", "10")
+
+  let svg_brush = d3.select("body").append("svg")
+    .attr("width", w)
+    .attr("id", "svg_brush")
+    .attr("height", h)
+    .style("margin-top", "10")
+    .style("position", "absolute")
+    .style("left", "0")
+  svg.append("clipPath")
+    .attr("id", "myClip")
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", 0)
+    .attr("width", w - margin.left - margin.right)
+    .attr("height", h - margin.top)
+
+  let map = svg.append("g")
+    .attr("class", "map")
+
+  map.attr("clip-path", "url(#myClip)")
+  let xAxis = (g, x) => {
+    g.attr("id", "x-axis")
+      .attr("transform", `translate(0,${h - margin.top})`)
+      .call(d3.axisBottom(x)
+        .tickFormat(d => `${d}%`)
+        .ticks(5));
+  }
+  map.append("rect")
+    .attr("x", margin.left)
+    .attr("y", 0)
+    .attr("width", w - margin.left - margin.right)
+    .attr("height", h - margin.top)
+    .attr("opacity", 0)
+
+  let y_axis = svg.append('g')
+    .attr("id", "y-axis")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(customYAxis, yScale);
+
+  let x_axis = svg.append('g').call(xAxis, xScale)
+  // x_axis.call(xAxis, xScale)
+  let zoomed = ({ transform }) => {
+    log(transform)
+    let x = transform.rescaleX(xScale).interpolate(d3.interpolateRound)
+    let y = transform.rescaleY(yScale).interpolate(d3.interpolateRound)
+    d3.select(".sd_group")
+      .attr("transform", transform)
+
+
+    d3.select(".modal_group")
+      .attr("transform", transform)
+    x_axis
+      .call(xAxis, x)
+    y_axis
+      .call(customYAxis, y)
+
+    d3.select(".cloud")
+      .attr("transform", transform)
+  }
+  let zoom = d3.zoom()
+    .scaleExtent([1, 2])
+    .translateExtent([[-100, -110], [700, 700]])
+    .on("zoom", zoomed)
+
+  map.call(zoom)
+  // .call(zoom.transform, d3.zoomIdentity);
+  //绘制云顶云高
+  let rects = map.append('g')
+    .attr("class", "cloud")
+    .selectAll("rect")
+    .data(cloudData)
+    .enter()
+    .append("rect")
+    .attr("x", xScale(0))
+    .attr("y", d => yScale(d[1]))
+    .attr("width", w - margin.left - margin.right)
+    .attr("height", d => {
+      return h - margin.top - yScale(d[1] - d[0])
+    })
+    .style("fill", "rgb(246 242 242 / 85%)")
+  log("rect", rects)
+  //管理实测廓线
+  let sd_group = map.append("g")
+    .attr("class", "sd_group")
+  //管理模型廓线
+  let modal_group = map.append("g")
+    .attr("class", "modal_group")
+  //绘制实测曲线
+  let line = d3.line()
+    .curve(d3.curveCardinal)
+    .x((d) => {
+      return xScale(d['humi'])
+    })
+    .y((d) => {
+      return yScale(d['height'])
+    })
+
+  let sd_l = sd_group.append("path")
+    .datum(sd)
+    .attr("class", "std_line")
+    .attr("d", line)
+
+
+  //绘制南郊曲线
+
+  let nj_l = modal_group.append("path")
+    .datum(modal)
+    .attr("class", "nj_line")
+    .attr("d", line)
+
+
+  //绘制辅助工具提示用的圆点
+  sd_group.selectAll("circle")
+    .data(sd)
+    .enter()
+    .append("circle")
+    .attr("r", 1)
+    .attr("cx", function (d) { return xScale(d['humi']); })
+    .attr("cy", function (d) { return yScale(d['height']) })
+    .append("title")
+    .text(function (d) { return `探空实测\n湿度:${d['humi']} 高度:${d['height']}` })
+
+  modal_group.selectAll("circle")
+    .data(modal)
+    .enter()
+    .append("circle")
+    .attr("r", 1)
+    .attr("cx", function (d) { return xScale(d['humi']); })
+    .attr("cy", function (d) { return yScale(d['height']) })
+    .append("title")
+    .text(function (d) { return `南郊四要素模型小样本扰动模型\n湿度:${d['humi']} 高度:${d['height']}` })
+
+
+
+
+
+  //点击显示隐藏的图例
+  var text_sd = svg.append("text")
+    .attr("id", 'tt_sd')
+    .text("探空实测");
+
+  var text_modal = svg.append("text")
+    .text(`TEST南郊四要素模型小样本扰动模型
+  `);
+
+
+  text_sd.attr("x", xScale(0))
+    .attr("y", h - margin.top + 30)
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "9px");
+
+  text_modal.attr("x", xScale(0))
+    .attr("y", h - margin.top + 40)
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "9px");
+
+  var sd_is = true
+  var modal_is = true
+  svg.selectAll("text")
+    .on("click", function () {
+
+      let id = d3.select(this).attr("id")
+      if (id == 'tt_sd') {
+        if (sd_is) {
+          sd_is = false
+          d3.select(".sd_group")
+            .style("display", "none")
+        } else {
+          sd_is = true
+          d3.select(".sd_group")
+            .style("display", "inherit")
+        }
+      } else {
+        if (modal_is) {
+          modal_is = false
+          d3.select(".modal_group")
+            .style("display", "none")
+          // d3.select(".modal_group circle")
+          //   .style("display", "none")
+        } else {
+          modal_is = true
+          d3.select(".modal_group")
+            .style("display", "inherit")
+        }
+      }
+    })
+  // 添加复位按钮监听事件
+  d3.selectAll('button')
+    .on("click", function () {
+
+      let id = d3.select(this).attr("id")
+      log("id", id)
+      if (id == "reset") {
+        const transform = d3.zoomIdentity
+        let transition = d3.transition().duration(1000)
+        d3.select(".sd_group")
+          .transition(transition)
+          .attr("transform", transform)
+          .style("display", "inherit")
+
+        d3.select(".modal_group")
+          .transition(transition)
+          .attr("transform", transform)
+          .style("display", "inherit")
+
+        x_axis
+          .transition(transition)
+          .call(xAxis, xScale)
+
+        y_axis
+          .transition(transition)
+          .call(customYAxis, yScale)
+
+        d3.select(".cloud")
+          .transition(transition)
+          .attr("transform", transform)
+      } else {
+        if (id == "brush") {
+          svg_brush.node().style["display"] = null
+        } else {
+          svg_brush.style("display", "none")
+
+        }
+      }
+
+    })
+});

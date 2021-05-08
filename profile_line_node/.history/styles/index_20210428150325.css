@@ -1,0 +1,56 @@
+svg .sd_group path,
+.modal_group path {
+
+  fill: none;
+  stroke-width: .1em;
+  stroke-lineCap: round
+}
+svg {
+  margin-top: 20;
+}
+svg .sd_group path {
+  stroke: black;
+}
+
+svg .modal_group path {
+  stroke: rgb(24, 144, 255);
+}
+
+svg .modal_group circle {
+  fill: rgb(24, 144, 255);
+}
+
+svg #x-axis text,
+#y-axis text {
+  font-size: 7px;
+  color: rgb(136, 134, 134);
+}
+
+svg #x-axis .tick line {
+  stroke: rgb(136, 134, 134);
+}
+
+svg #x-axis path,
+#y-axis path line {
+  color: rgb(119, 115, 115);
+}
+
+svg circle:hover {
+  r: 3
+}
+
+svg #y-axis path {
+  display: none;
+}
+
+svg #y-axis line {
+  stroke-dasharray: 2;
+}
+
+#reset{
+  position:absolute;
+}
+#brush{
+  position:absolute;
+  left: 70px;
+}
